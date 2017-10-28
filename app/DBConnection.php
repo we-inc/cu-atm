@@ -1,8 +1,10 @@
 <?php
 
 include_once 'ServiceType.php';
+include_once 'AccountInformationException.php';
+include_once 'BillingException.php';
 
-class DBConnection{
+class DBConnection {
 
     private static $dsn = 'mysql:dbname=u334971496_cutqa;host=sql128.main-hosting.eu';
     private static $user = 'u334971496_cutqa';
@@ -28,10 +30,10 @@ class DBConnection{
         $argument = func_get_args();
 
         if (count($argument) == 1) {
-            return $DBConnection::serviceAuthentication($argument[0]);
+            return DBConnection::serviceAuthentication($argument[0]);
         }
         elseif(count($argument) == 2) {
-            return $DBConnection::userAuthentication(
+            return DBConnection::userAuthentication(
                 $argument[0],
                 $argument[1]
             );
@@ -75,14 +77,14 @@ class DBConnection{
         }
 
         if(null == $stmt) {
-            throw new Exception("Unknow billing type.");
+            throw new BillingException("Unknow billing type.");
         }
 
         $stmt->execute([':accNo' => $accNo]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
        
         if(!$result) {
-            throw new Exception("Account number : {$accNo} not found.");
+            throw new AccountInformationException("Account number : {$accNo} not found.");
         }
 
         return intval($result['charge']);
@@ -107,7 +109,7 @@ class DBConnection{
         $stmt->execute();
     }
 
-    private function serviceAuthentication(string $accNo): array {
+    private static function serviceAuthentication(string $accNo): array {
         $con = DBConnection::getInstance();
         $stmt = $con->prepare(
             "SELECT no as accNo, "
@@ -121,12 +123,12 @@ class DBConnection{
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            throw new Exception("Account number : {$accNo} not found.");
+            throw new AccountInformationException("Account number : {$accNo} not found.");
         }
         return $result;
     }
 
-    private function userAuthentication(string $accNo, string $pin): array {
+    private static function userAuthentication(string $accNo, string $pin): array {
         $con = DBConnection::getInstance();
         
         $stmt = $con->prepare(
@@ -141,7 +143,7 @@ class DBConnection{
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$result) {
-            throw new Exception("Account number : {$accNo} not found.");
+            throw new AccountInformationException("Account number or PIN is invalid.");
         }
         
         return $result;
