@@ -76,7 +76,7 @@ include_once "./app/DBConnection.php";
 
 try {
 
-  $charge = DBConnection::saveTransaction("0123444667", ServiceType::ELECTRIC_BILLING);
+  $charge = DBConnection::getCharge("0123444667", ServiceType::ELECTRIC_BILLING);
 
 } catch (BillingException $e) {
 
